@@ -4,11 +4,11 @@ import pandas_ta as ta
 from datetime import datetime
 
 proxy_url = 'http://127.0.0.1:15236'
-exchange = ccxt.okx({'proxies': {'http': proxy_url, 'https': proxy_url}})
+exchange = ccxt.okx({'proxies': {'http': proxy_url, 'https': proxy_url}, 'enableRateLimit': True, 'timeout': 30000})
 
 print("Downloading historical data...")
 
-bars = exchange.fetch_ohlcv('BTC/USDT', timeframe='5m', limit=50000, params={'paginate': True})
+bars = exchange.fetch_ohlcv('BTC/USDT', timeframe='15m', limit=50000, params={'paginate': True})
 df = pd.DataFrame(bars, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
 df['time'] = pd.to_datetime(df['timestamp'], unit='ms')
 
