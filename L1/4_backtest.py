@@ -8,12 +8,13 @@ exchange = ccxt.okx({'proxies': {'http': proxy_url, 'https': proxy_url}, 'enable
 
 print("Downloading historical data...")
 
-bars = exchange.fetch_ohlcv('BTC/USDT', timeframe='15m', limit=50000, params={'paginate': True})
+bars = exchange.fetch_ohlcv('SOL/USDT', timeframe='15m', limit=50000, params={'paginate': True})
 df = pd.DataFrame(bars, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
 df['time'] = pd.to_datetime(df['timestamp'], unit='ms')
 
-df['MA20'] = ta.sma(df['close'], length=20) # MA in 20 periods
-df['RSI'] = ta.rsi(df['close'], length=14)  # RSI in 14 periods
+df['MA20'] = ta.sma(df['close'], length=20) # close price MA in 20 periods
+df['RSI'] = ta.rsi(df['close'], length=14)  # close price RSI in 14 periods
+df['VOL_MA5'] = ta.sma(df['volume'], length=5) # volume MA in 5 periods
 
 print("Backtesting strategy...")
 
@@ -27,9 +28,13 @@ for i in range(20, len(df)):
     
     current_price = row['close']
     current_rsi = row['RSI']
+    current_vol = row['volume']
+    avg_vol = row['VOL_MA5']
     
     is_above_ma = all(prev_row['close'] > prev_row['MA20']) and (current_price > row['MA20'])
-    if is_above_ma and current_rsi < 70 and hold == 0:
+    is_not_overbought = current_rsi < 70
+    is_volume_breakout = current_vol > (avg_vol * 1.5)
+    if is_above_ma and is_not_overbought and is_volume_breakout and cash > 0:
         hold = cash / current_price
         cash = 0.0
         history.append(f"[{row['time']}] BUY @ {current_price:.2f} (RSI: {current_rsi:.1f})")
