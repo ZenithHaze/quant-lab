@@ -2,14 +2,6 @@ import ccxt
 import time
 from datetime import datetime
 
-'''
-# Find VPN port
-lsof -i -P | grep -i "LISTEN"
-
-# Verify
-curl -x http://127.0.0.1:15236 http://www.google.com
-'''
-
 proxy_url = 'http://127.0.0.1:15236'
 
 exchange = ccxt.okx({
